@@ -3,6 +3,7 @@ import Cookies from "universal-cookie";
 
 function UserProfile() {
   const [userDetail, setUserDetail] = useState([]);
+  const cookies = new Cookies();
 
   useEffect(() => {
     checkCookies();
@@ -17,7 +18,6 @@ function UserProfile() {
   };
 
   const checkCookies = () => {
-    const cookies = new Cookies();
     const token = cookies.get("token");
     if (token) {
       getDataFromStorage();
@@ -33,12 +33,14 @@ function UserProfile() {
     window.location.assign("http://localhost:3000/");
     localStorage.removeItem("isLogin");
     localStorage.removeItem("userInfo");
+    cookies.remove("token");
   };
 
   const handleLogout = () => {
     alert("Logout user success");
     window.location.assign("http://localhost:3000/");
     localStorage.removeItem("isLogin");
+    cookies.remove("token");
   };
 
   return (

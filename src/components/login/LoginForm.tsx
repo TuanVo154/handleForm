@@ -1,6 +1,5 @@
 import { TextField } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Cookies from "universal-cookie";
 import md5 from "md5";
 const loginItems = [
@@ -38,7 +37,6 @@ function LoginForm() {
     useState<userInfoInStorage>({});
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLogin, setIsLogin] = useState(false);
-  const navigate = useNavigate();
 
   //Get data in form
   const getLoginInfo = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,7 +79,7 @@ function LoginForm() {
 
       setIsLogin(true);
       localStorage.setItem("isLogin", JSON.stringify(isLogin));
-      navigate("/user-profile");
+      window.location.assign("http://localhost:3000/user-profile");
     } else {
       alert("Login Fail!!!");
       setErrors(formErrors);

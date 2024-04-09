@@ -62,7 +62,7 @@ const ImportInfo: React.FC<ChildData> = ({ sendData }) => {
       const userID = uuidv4();
       const userInfoHaveID = { ...userInfo, id: userID };
       localStorage.setItem("userInfo", JSON.stringify(userInfoHaveID));
-      window.location.assign("http://localhost:3000/user-profile");
+      window.location.assign("http://localhost:3000/login");
     } else {
       alert("Fail successfully");
       setErrors(formErrors);
