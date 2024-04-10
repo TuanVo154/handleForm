@@ -99,12 +99,6 @@ function UserProfile() {
         >
           Remove User
         </button>
-        <button
-          className="p-2 cursor-pointer border border-solid border-[#e85a4f] rounded-lg hover:bg-[#e85a4f] hover:text-white"
-          type="submit"
-        >
-          test
-        </button>
       </div>
     </div>
   );
