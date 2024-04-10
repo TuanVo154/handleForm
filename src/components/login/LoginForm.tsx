@@ -1,7 +1,6 @@
 import { TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 import Cookies from "universal-cookie";
-import md5 from "md5";
 const loginItems = [
   {
     id: 1,
@@ -22,19 +21,10 @@ interface FormErrors {
   password?: string;
 }
 
-interface userInfoInStorage {
-  id?: string;
-  fullName?: string;
-  userName?: string;
-  email?: string;
-  password?: string;
-}
-
 function LoginForm() {
   //State
   const [loginInfo, setLoginInfo] = useState({});
-  const [userInLocalStorage, setUserInLocalStorage] =
-    useState<userInfoInStorage>({});
+  const [userInLocalStorage, setUserInLocalStorage] = useState([]);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLogin, setIsLogin] = useState(false);
 
@@ -54,7 +44,7 @@ function LoginForm() {
   const getDataFromStorage = () => {
     const dataInfoString = localStorage.getItem("userInfo");
     if (dataInfoString) {
-      const dataJson = JSON.parse(dataInfoString);
+      const dataJson = JSON.parse(dataInfoString) || [];
       setUserInLocalStorage(dataJson);
     }
   };
@@ -63,14 +53,16 @@ function LoginForm() {
   const handleLogin = (event: React.FormEvent) => {
     event.preventDefault();
     const formErrors = validateForm(loginInfo);
-    if (Object.keys(formErrors).length === 0) {
+    const userLogin: any = verifyUser(loginInfo);
+    if (Object.keys(formErrors).length === 0 && userLogin) {
       alert("Login Success !!!");
-      // Create token and encode
-      const tokenData = {
-        id: userInLocalStorage.id,
-        userName: userInLocalStorage.userName,
+      // Create token
+      const token = {
+        userID: userLogin?.id,
+        name: userLogin?.userName,
       };
-      const token = md5(JSON.stringify(tokenData));
+      console.log("This is your token", token);
+
       // Set cookies and expiration
       const cookies = new Cookies();
       const expiration = new Date();
@@ -96,15 +88,19 @@ function LoginForm() {
       errorsString.password = "Please enter your password";
     }
 
-    // Verify User
-    if (obj.userName !== userInLocalStorage.userName) {
-      errorsString.userName = "Your username is wrong";
-    }
-    if (obj.password !== userInLocalStorage.password) {
-      errorsString.password = "Your password is wrong";
-    }
-
     return errorsString;
+  };
+
+  const verifyUser = (obj: any) => {
+    const userFound = userInLocalStorage.find(
+      (user: any) =>
+        user.userName === obj.userName && user.password === obj.password
+    );
+    if (!userFound) {
+      alert("Incorrect username or password");
+    } else {
+      return userFound;
+    }
   };
 
   return (

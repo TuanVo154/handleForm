@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TextField } from "@mui/material";
 import { v4 as uuidv4 } from "uuid";
 
@@ -45,12 +45,26 @@ const ImportInfo: React.FC<ChildData> = ({ sendData }) => {
   const [userInfo, setUserInfo] = useState({});
   const [errors, setErrors] = useState<FormErrors>({});
 
+  //Get data in Storage
+  const getListUser: any = localStorage.getItem("userInfo");
+  const dataListUser: any = JSON.parse(getListUser) || [];
+
   //Get data user
   const getUserInfoAndErrors = (event: React.ChangeEvent<HTMLInputElement>) => {
     const key = event.target.name;
     const value = event.target.value;
     setUserInfo((values) => ({ ...values, [key]: value }));
     setErrors((values) => ({ ...values, [key]: "" }));
+  };
+
+  //Check have user in localStorage
+  const checkUserInLocalStorage = (obj: any) => {
+    if (dataListUser) {
+      dataListUser.push(obj);
+      localStorage.setItem("userInfo", JSON.stringify(dataListUser));
+    } else {
+      localStorage.setItem("userInfo", JSON.stringify(obj));
+    }
   };
 
   //Save data user into cookies
@@ -61,7 +75,7 @@ const ImportInfo: React.FC<ChildData> = ({ sendData }) => {
       alert("Register successfully");
       const userID = uuidv4();
       const userInfoHaveID = { ...userInfo, id: userID };
-      localStorage.setItem("userInfo", JSON.stringify(userInfoHaveID));
+      checkUserInLocalStorage(userInfoHaveID);
       window.location.assign("http://localhost:3000/login");
     } else {
       alert("Fail successfully");
@@ -72,6 +86,9 @@ const ImportInfo: React.FC<ChildData> = ({ sendData }) => {
   //Validate Form
   const validateForm = (obj: any) => {
     let errorsString: FormErrors = {};
+    const existsUserName = dataListUser.find(
+      (user: any) => user.userName === obj.userName
+    );
 
     if (!obj.fullName) {
       errorsString.fullName = "Please enter your full name";
@@ -81,6 +98,10 @@ const ImportInfo: React.FC<ChildData> = ({ sendData }) => {
       errorsString.userName = "Please enter your username";
     } else if (obj.userName.length < 4) {
       errorsString.userName = "Username must be at least 4 characters";
+    }
+
+    if (existsUserName) {
+      errorsString.userName = "Username already in use";
     }
 
     if (!obj.email) {
@@ -112,7 +133,7 @@ const ImportInfo: React.FC<ChildData> = ({ sendData }) => {
                 type={inputItem.inputType}
               />
               {errors[inputItem.name as keyof FormErrors] && (
-                <span className="block mt-2 text-[10px] text-red-600">
+                <span className="block mt-2 text-xs text-red-600">
                   {errors[inputItem.name as keyof FormErrors]}
                 </span>
               )}

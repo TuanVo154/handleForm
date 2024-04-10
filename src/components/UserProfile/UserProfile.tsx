@@ -1,26 +1,30 @@
 import { useEffect, useState } from "react";
 import Cookies from "universal-cookie";
 
+interface UserInfo {
+  id: string;
+  fullName: string;
+  userName: string;
+  email: string;
+  password: string;
+}
+
 function UserProfile() {
-  const [userDetail, setUserDetail] = useState([]);
+  const [userDetail, setUserDetail] = useState<UserInfo | null>(null);
+  const [userID, setUserID] = useState();
   const cookies = new Cookies();
 
   useEffect(() => {
-    checkCookies();
+    getToken();
   }, []);
 
-  const getDataFromStorage = () => {
-    const getUserDetail: any = localStorage.getItem("userInfo");
-    const parseUserDetails = JSON.parse(getUserDetail);
-    const userDetail: any = [];
-    userDetail.push(parseUserDetails);
-    setUserDetail(userDetail);
-  };
-
-  const checkCookies = () => {
+  const getToken = () => {
     const token = cookies.get("token");
     if (token) {
-      getDataFromStorage();
+      const userID = token.userID;
+      setUserID(userID);
+      const userInfo = getUserFromStorage(userID);
+      setUserDetail(userInfo);
     } else {
       alert("Your cookies expired");
       window.location.assign("http://localhost:3000/");
@@ -28,12 +32,28 @@ function UserProfile() {
     }
   };
 
+  const getUserFromStorage = (userId: any) => {
+    const userListString = localStorage.getItem("userInfo");
+    if (userListString) {
+      const userList = JSON.parse(userListString);
+      const userFound = userList.find((user: any) => user.id === userId);
+      return userFound;
+    }
+  };
+
   const removeUser = () => {
     alert("Remove user success");
+
+    const userListString: any = localStorage.getItem("userInfo");
+    const userList = JSON.parse(userListString);
+    const userFound = getUserFromStorage(userID);
+    const updateListUser = userList.filter(
+      (item: any) => item.id !== userFound.id
+    );
+    localStorage.setItem("userInfo", JSON.stringify(updateListUser));
+    cookies.remove("token");
     window.location.assign("http://localhost:3000/");
     localStorage.removeItem("isLogin");
-    localStorage.removeItem("userInfo");
-    cookies.remove("token");
   };
 
   const handleLogout = () => {
@@ -48,20 +68,22 @@ function UserProfile() {
       <h2 className="text-2xl text-[#e85a4f] mb-6">
         This is your current information
       </h2>
-      {userDetail.map((item: any) => (
-        <div key={item.id} className="ml-4 mt-10">
+      {userDetail && (
+        <div key={userDetail.id} className="ml-4 mt-10">
           <label className="block my-4">
-            Your full name is: {item.fullName}
-          </label>
-          <label className="block my-4">Your email is: {item.email}</label>
-          <label className="block my-4">
-            Your username is: {item.userName}
+            Your full name is: {userDetail.fullName}
           </label>
           <label className="block my-4">
-            Your password is: {item.password}
+            Your email is: {userDetail.email}
+          </label>
+          <label className="block my-4">
+            Your username is: {userDetail.userName}
+          </label>
+          <label className="block my-4">
+            Your password is: {userDetail.password}
           </label>
         </div>
-      ))}
+      )}
       <div className="flex justify-between items-center">
         <button
           className="p-2 cursor-pointer border border-solid border-black rounded-lg hover:bg-gray-400 hover:text-white hover:border-gray-400"
@@ -76,6 +98,12 @@ function UserProfile() {
           type="submit"
         >
           Remove User
+        </button>
+        <button
+          className="p-2 cursor-pointer border border-solid border-[#e85a4f] rounded-lg hover:bg-[#e85a4f] hover:text-white"
+          type="submit"
+        >
+          test
         </button>
       </div>
     </div>
